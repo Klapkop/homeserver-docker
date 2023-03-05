@@ -4,9 +4,26 @@ services:
   reverse-proxy:
     image: traefik:v2.9
     command: 
-      - --api.insecure=true 
-      - --providers.docker
+      - --api.insecure=true
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --providers.docker=true
       - --providers.file.filename=/config/dynamic_conf.yml
+    labels:
+      # Redirect to https
+      - traefik.http.routers.redirect-to-https.rule=HostRegexp(`{host:.+}`)
+      - traefik.http.routers.redirect-to-https.entrypoints=http
+      - traefik.http.routers.redirect-to-https.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+
+      # Dashboard
+      - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)
+      - traefik.http.routers.traefik.entrypoints=https
+      - traefik.http.routers.traefik.middlewares=auth
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_USER}:${TRAEFIK_PASSWORD_HASH}
+
     ports:
       - "80:80"
       - "8080:8080"
