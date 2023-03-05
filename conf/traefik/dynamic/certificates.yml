@@ -1,4 +1,6 @@
 tls:
-  certificates:
-    - certFile: /ssl/cert.pem
-      keyFile: /ssl/key.pem
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /ssl/cert.pem
+        keyFile: /ssl/key.pem
