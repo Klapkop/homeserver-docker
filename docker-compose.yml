@@ -1,21 +1,27 @@
 version: '3'
 
 services:
+  dockerd-proxy:
+    image: tecnativa/docker-socket-proxy:0.1
+    restart: unless-stopped
+    userns_mode: 'host'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      CONTAINERS: 1
+    networks:
+      - docker-proxynet
+
   reverse-proxy:
     image: traefik:v2.9
-    command: 
-      - --api.insecure=true
-      - --entrypoints.http.address=:80
-      - --entrypoints.https.address=:443
-      - --providers.docker=true
-      - --providers.file.filename=/config/dynamic_conf.yml
+    restart: unless-stopped
+    read_only: true
+    depends_on:
+      - dockerd-proxy
+    security_opt:
+      - no-net-privileges:true
     labels:
-      # Redirect to https
-      - traefik.http.routers.redirect-to-https.rule=HostRegexp(`{host:.+}`)
-      - traefik.http.routers.redirect-to-https.entrypoints=http
-      - traefik.http.routers.redirect-to-https.middlewares=redirect-to-https
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-
+      - traefik.enable=true
       # Dashboard
       - traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)
       - traefik.http.routers.traefik.entrypoints=https
@@ -23,12 +29,23 @@ services:
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.tls=true
       - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_USER}:${TRAEFIK_PASSWORD_HASH}
-
+    volumes:
+      - ./conf/traefik/traefik.yml:/etc/traefik/traefik.yaml:ro
+      - ./conf/traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./secrets/ssl:/ssl:ro
+    networks:
+      - traefik-servicenet
+      - docker-proxynet
     ports:
       - "80:80"
-      - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./conf/traefik:/config
-      - ./secrets/ssl:/ssl
+      - "443:443"
+    
 
+networks:
+  traefik-servicenet:
+    external: true
+    name: traefik-servicenet
+ 
+  docker-proxynet:
+    driver: bridge
+    internal: true

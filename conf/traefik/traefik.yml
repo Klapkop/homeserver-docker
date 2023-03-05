@@ -1,0 +1,29 @@
+# accessLog: {}
+log:
+  level: WARN
+providers:
+  docker:
+    exposedByDefault: false
+    endpoint: 'tcp://dockerproxy:2375'
+    network: traefik-servicenet
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+api:
+  dashboard: true # if you don't need the dashboard disable it
+entryPoints:
+  web:
+    address: ':80' # will be routed to port 80, see docker-compose.yaml
+    http:
+      redirections:   # redirect entire entrypoint to https
+        entryPoint:
+          to: ':443'
+          scheme: https      
+  web-secure:
+    address: ':443' # will be routed to port 443, see docker-compose.yaml
+    http3:
+      advertisedPort: 443
+experimental:
+  http3: true
+global:
+  sendAnonymousUsage: false # set to false, if you don't want to send anonymous usage data
