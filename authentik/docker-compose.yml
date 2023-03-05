@@ -67,15 +67,28 @@ services:
     # (1000:1000 by default)
     user: root
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      #- /var/run/docker.sock:/var/run/docker.sock
       - ./media:/media
       - ./certs:/certs
       - ./custom-templates:/templates
     env_file:
       - .env
+    networks:
+      - default
+      - docker-proxynet
+      - traefik-servicenet
 
 volumes:
   database:
     driver: local
   redis:
     driver: local
+
+networks:
+  traefik-servicenet:
+    external: true
+    name: traefik-servicenet
+ 
+  docker-proxynet:
+    external: true
+    name: docker-proxynet

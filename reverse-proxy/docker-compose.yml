@@ -47,5 +47,5 @@ networks:
     name: traefik-servicenet
  
   docker-proxynet:
-    driver: bridge
-    internal: true
+    external: true
+    name: docker-proxynet
