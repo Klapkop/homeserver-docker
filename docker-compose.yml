@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  dockerd-proxy:
+  dockerproxy:
     image: tecnativa/docker-socket-proxy:0.1
     restart: unless-stopped
     userns_mode: 'host'
@@ -17,9 +17,9 @@ services:
     restart: unless-stopped
     read_only: true
     depends_on:
-      - dockerd-proxy
+      - dockerproxy
     security_opt:
-      - no-net-privileges:true
+      - no-new-privileges:true
     labels:
       - traefik.enable=true
       # Dashboard
