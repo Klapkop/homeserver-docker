@@ -41,11 +41,19 @@ services:
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${PG_PASS}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.authentik.rule=Host(`auth.${DOMAIN}`)
+      - traefik.http.routers.authentik.entrypoints=web-secure
+      - traefik.http.routers.authentik.tls=true
     volumes:
       - ./media:/media
       - ./custom-templates:/templates
     env_file:
       - .env
+    networks:
+      - default
+      - traefik-servicenet
     ports:
       - "${AUTHENTIK_PORT_HTTP:-9000}:9000"
       - "${AUTHENTIK_PORT_HTTPS:-9443}:9443"
