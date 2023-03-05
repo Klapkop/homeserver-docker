@@ -84,7 +84,6 @@ services:
     networks:
       - default
       - docker-proxynet
-      - traefik-servicenet
 
 volumes:
   database:
