@@ -31,6 +31,7 @@ services:
       - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_USER}:${TRAEFIK_PASSWORD_HASH}
     volumes:
       - ./conf/traefik/traefik.yml:/etc/traefik/traefik.yaml:ro
+      - ./conf/traefik/authenticated_origin_pull_ca.pem:/etc/traefik/authenticated_origin_pull_ca.pem:ro
       - ./conf/traefik/dynamic:/etc/traefik/dynamic:ro
       - ./secrets/ssl:/ssl:ro
     networks:
